@@ -21,7 +21,6 @@ func _ready() -> void:
 	make_crystals()
 	make_gas()
 	make_station()
-	make_samples()
 
 func make_materials() -> void:
 	rock_mat = mat(Color(0.045, 0.055, 0.06), 0.98)
@@ -44,7 +43,8 @@ func make_cave() -> void:
 	for z in range(-4, 5):
 		for x in range(-4, 5):
 			var p := Vector3(x * cell_size, 0, z * cell_size)
-			box(p + Vector3(0, -0.5, 0), Vector3(cell_size, 1, cell_size), floor_mat, true)
+			var floor_body := box(p + Vector3(0, -0.5, 0), Vector3(cell_size, 1, cell_size), floor_mat, true)
+			floor_body.add_to_group("diggable")
 			box(p + Vector3(0, 7, 0), Vector3(cell_size, 1, cell_size), rock_mat, true)
 			if x == -4 or rng.randf() < 0.28:
 				box(p + Vector3(-cell_size * 0.5, 2.5, 0), Vector3(0.6, 5, cell_size), rock_mat, true)
@@ -122,24 +122,7 @@ func make_station() -> void:
 	label.position = Vector3(0, 4.5, 4.5)
 	station.add_child(label)
 
-func make_samples() -> void:
-	var points := [Vector3(-12, 0.8, 12), Vector3(24, 0.8, 12), Vector3(-24, 0.8, -12), Vector3(12, 0.8, -36), Vector3(36, 0.8, -36)]
-	for i in points.size():
-		var area := Area3D.new()
-		area.name = "Sample_%d" % (i + 1)
-		area.position = points[i]
-		area.add_to_group("sample")
-		root.add_child(area)
-		var mesh := MeshInstance3D.new()
-		var capsule := CapsuleMesh.new()
-		capsule.radius = 0.18
-		capsule.height = 0.7
-		mesh.mesh = capsule
-		mesh.material_override = crystal_mat
-		mesh.position.y = 0.5
-		area.add_child(mesh)
-
-func box(pos: Vector3, size: Vector3, material: Material, collision: bool) -> void:
+func box(pos: Vector3, size: Vector3, material: Material, collision: bool) -> StaticBody3D:
 	var body := StaticBody3D.new()
 	body.position = pos
 	var mesh := MeshInstance3D.new()
@@ -155,3 +138,4 @@ func box(pos: Vector3, size: Vector3, material: Material, collision: bool) -> vo
 		c.shape = shape
 		body.add_child(c)
 	root.add_child(body)
+	return body
