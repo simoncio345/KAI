@@ -21,39 +21,45 @@ func create_menu() -> void:
 
 	var title := Label.new()
 	title.text = "KAI"
-	title.position = Vector2(0, 105)
+	title.position = Vector2(0, 75)
 	title.size = Vector2(1280, 90)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 72)
+	title.add_theme_font_size_override("font_size", 78)
 	background.add_child(title)
 
 	var subtitle := Label.new()
 	subtitle.text = "DEEP RESEARCH // PROTOCOLO KAI-01"
-	subtitle.position = Vector2(0, 195)
+	subtitle.position = Vector2(0, 160)
 	subtitle.size = Vector2(1280, 40)
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	subtitle.add_theme_font_size_override("font_size", 18)
 	background.add_child(subtitle)
 
+	var line := ColorRect.new()
+	line.position = Vector2(440, 215)
+	line.size = Vector2(400, 2)
+	line.color = Color(0.2, 0.75, 0.72, 0.8)
+	background.add_child(line)
+
 	var story := Label.new()
-	story.text = "AÑO 2047\n\nUna expedición científica detectó un gas desconocido bajo una antigua red de cavernas.\nLas lecturas aumentan cada hora. La fuente no coincide con ninguna actividad geológica conocida.\n\nEres la científica enviada para investigar el origen.\nTu única pista está en el suelo."
-	story.position = Vector2(210, 285)
-	story.size = Vector2(860, 190)
+	story.text = "AÑO 2047\n\nUna red de sensores subterráneos ha detectado un gas desconocido que está aumentando rápidamente.\nLa señal procede de una antigua zona de investigación abandonada.\n\nLa misión KAI-01 es descubrir qué está liberando el gas antes de que la zona quede completamente cubierta.\n\nTú eres la científica enviada para investigar. La respuesta está bajo tus pies."
+	story.position = Vector2(190, 245)
+	story.size = Vector2(900, 230)
 	story.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	story.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	story.add_theme_font_size_override("font_size", 19)
+	story.add_theme_font_size_override("font_size", 18)
 	background.add_child(story)
 
 	var start := Button.new()
 	start.text = "INICIAR EXPEDICIÓN"
-	start.position = Vector2(455, 510)
-	start.size = Vector2(370, 62)
+	start.position = Vector2(455, 505)
+	start.size = Vector2(370, 64)
 	start.add_theme_font_size_override("font_size", 21)
 	start.pressed.connect(start_game)
 	background.add_child(start)
 
 	var controls := Label.new()
-	controls.text = "WASD  MOVER     SHIFT  CORRER     F  LINTERNA     E  EXCAVAR     ESC  MOUSE"
+	controls.text = "WASD MOVER   |   SHIFT CORRER   |   F LINTERNA   |   E EXCAVAR   |   ESC PAUSA"
 	controls.position = Vector2(0, 610)
 	controls.size = Vector2(1280, 40)
 	controls.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -74,7 +80,7 @@ func start_game() -> void:
 func create_player() -> void:
 	player = CharacterBody3D.new()
 	player.name = "Scientist"
-	player.position = Vector3(0, 0.2, 0)
+	player.position = Vector3(0, 1.4, 0)
 	player.set_script(preload("res://scripts/player_kai.gd"))
 
 	var collision := CollisionShape3D.new()
