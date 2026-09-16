@@ -2,18 +2,80 @@ extends Node3D
 
 var generator: Node3D
 var player: CharacterBody3D
+var menu_layer: CanvasLayer
+var started: bool = false
 
 func _ready() -> void:
+	create_underground_environment()
+	create_menu()
+
+func create_menu() -> void:
+	menu_layer = CanvasLayer.new()
+	menu_layer.name = "MainMenu"
+	add_child(menu_layer)
+
+	var background := ColorRect.new()
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background.color = Color(0.003, 0.007, 0.01, 1.0)
+	menu_layer.add_child(background)
+
+	var title := Label.new()
+	title.text = "KAI"
+	title.position = Vector2(0, 105)
+	title.size = Vector2(1280, 90)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 72)
+	background.add_child(title)
+
+	var subtitle := Label.new()
+	subtitle.text = "DEEP RESEARCH // PROTOCOLO KAI-01"
+	subtitle.position = Vector2(0, 195)
+	subtitle.size = Vector2(1280, 40)
+	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle.add_theme_font_size_override("font_size", 18)
+	background.add_child(subtitle)
+
+	var story := Label.new()
+	story.text = "AÑO 2047\n\nUna expedición científica detectó un gas desconocido bajo una antigua red de cavernas.\nLas lecturas aumentan cada hora. La fuente no coincide con ninguna actividad geológica conocida.\n\nEres la científica enviada para investigar el origen.\nTu única pista está en el suelo."
+	story.position = Vector2(210, 285)
+	story.size = Vector2(860, 190)
+	story.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	story.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	story.add_theme_font_size_override("font_size", 19)
+	background.add_child(story)
+
+	var start := Button.new()
+	start.text = "INICIAR EXPEDICIÓN"
+	start.position = Vector2(455, 510)
+	start.size = Vector2(370, 62)
+	start.add_theme_font_size_override("font_size", 21)
+	start.pressed.connect(start_game)
+	background.add_child(start)
+
+	var controls := Label.new()
+	controls.text = "WASD  MOVER     SHIFT  CORRER     F  LINTERNA     E  EXCAVAR     ESC  MOUSE"
+	controls.position = Vector2(0, 610)
+	controls.size = Vector2(1280, 40)
+	controls.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	controls.add_theme_font_size_override("font_size", 14)
+	background.add_child(controls)
+
+func start_game() -> void:
+	if started:
+		return
+	started = true
+	menu_layer.queue_free()
+
 	generator = preload("res://scripts/world_generator.gd").new()
+	generator.name = "WorldGenerator"
 	add_child(generator)
 	create_player()
-	create_underground_environment()
 
 func create_player() -> void:
 	player = CharacterBody3D.new()
 	player.name = "Scientist"
 	player.position = Vector3(0, 0.2, 0)
-	player.set_script(preload("res://scripts/player.gd"))
+	player.set_script(preload("res://scripts/player_kai.gd"))
 
 	var collision := CollisionShape3D.new()
 	var capsule := CapsuleShape3D.new()
