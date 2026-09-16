@@ -12,11 +12,15 @@ var dug_mat: StandardMaterial3D
 var crystal_mat: StandardMaterial3D
 var gas_mat: StandardMaterial3D
 var dug_count: int = 0
+var gas_zone: Node3D
+var gas_clouds: Array[MeshInstance3D] = []
+var gas_age: float = 0.0
+var gas_expansion: float = 1.0
 
 signal sample_found(sample_number: int, position: Vector3)
 
 func _ready() -> void:
-	rng.seed = seed if seed != 0 else Time.get_unix_time_from_system()
+	rng.seed = seed if seed != 0 else int(Time.get_unix_time_from_system())
 	root = Node3D.new()
 	root.name = "UndergroundWorld"
 	add_child(root)
@@ -25,6 +29,18 @@ func _ready() -> void:
 	make_crystals()
 	make_gas()
 	make_station()
+
+func _process(delta: float) -> void:
+	if not gas_zone:
+		return
+	gas_age += delta
+	gas_expansion = minf(3.2, 1.0 + gas_age * 0.012)
+	gas_zone.scale = Vector3.ONE * gas_expansion
+	for i in gas_clouds.size():
+		var cloud := gas_clouds[i]
+		if is_instance_valid(cloud):
+			cloud.rotation.y += delta * (0.08 + float(i % 4) * 0.02)
+			cloud.position.y += sin(gas_age * 0.45 + float(i)) * delta * 0.08
 
 func make_materials() -> void:
 	rock_mat = mat(Color(0.045, 0.055, 0.06), 0.98)
@@ -109,7 +125,7 @@ func dig_ground(body: StaticBody3D) -> bool:
 	var tween := create_tween()
 	tween.set_trans(Tween.TRANS_QUAD)
 	tween.set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(body, "position:y", body.position.y - 2.5, 0.5)
+	tween.tween_property(body, "position:y", body.position.y - 2.5, 0.7)
 
 	var sample := MeshInstance3D.new()
 	sample.name = "ExcavatedSample_%d" % dug_count
@@ -151,12 +167,12 @@ func make_crystals() -> void:
 		root.add_child(light)
 
 func make_gas() -> void:
-	var center := Vector3(-36.0, 0.0, -36.0)
-	var zone := Node3D.new()
-	zone.name = "KAI_Gas_Zone"
-	zone.position = center
-	root.add_child(zone)
-	for i in 16:
+	gas_zone = Node3D.new()
+	gas_zone.name = "KAI_Gas_Zone"
+	gas_zone.position = Vector3(-36.0, 0.0, -36.0)
+	root.add_child(gas_zone)
+
+	for i in 22:
 		var cloud := MeshInstance3D.new()
 		var sphere := SphereMesh.new()
 		var r: float = rng.randf_range(2.0, 5.0)
@@ -164,14 +180,16 @@ func make_gas() -> void:
 		sphere.height = r * 1.2
 		cloud.mesh = sphere
 		cloud.material_override = gas_mat
-		cloud.position = Vector3(rng.randf_range(-8.0, 8.0), rng.randf_range(0.2, 3.0), rng.randf_range(-8.0, 8.0))
+		cloud.position = Vector3(rng.randf_range(-9.0, 9.0), rng.randf_range(0.2, 3.5), rng.randf_range(-9.0, 9.0))
 		cloud.scale.y = 0.5
-		zone.add_child(cloud)
+		gas_zone.add_child(cloud)
+		gas_clouds.append(cloud)
+
 	var light := OmniLight3D.new()
 	light.light_color = Color(0.1, 0.8, 0.4)
 	light.light_energy = 1.8
 	light.omni_range = 18.0
-	zone.add_child(light)
+	gas_zone.add_child(light)
 
 func make_station() -> void:
 	var station := Node3D.new()
