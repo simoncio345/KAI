@@ -10,13 +10,13 @@ var flashlight: SpotLight3D
 var objective_label: Label
 var status_label: Label
 var telemetry_label: Label
-var exposure := 0.0
-var samples := 0
-var flashlight_on := true
+var exposure: float = 0.0
+var samples: int = 0
+var flashlight_on: bool = true
 
 func _ready() -> void:
 	camera_pivot = get_node("CameraPivot")
-	flashlight = get_node("CameraPivot/Flashlight")
+	flashlight = get_node("CameraPivot/Camera3D/Flashlight")
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	create_hud()
 
@@ -24,7 +24,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		rotate_y(-event.relative.x * mouse_sensitivity)
 		camera_pivot.rotate_x(-event.relative.y * mouse_sensitivity)
-		camera_pivot.rotation.x = clamp(camera_pivot.rotation.x, deg_to_rad(-85.0), deg_to_rad(85.0))
+		camera_pivot.rotation.x = clampf(camera_pivot.rotation.x, deg_to_rad(-85.0), deg_to_rad(85.0))
 	elif event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_ESCAPE:
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED else Input.MOUSE_MODE_CAPTURED
@@ -35,28 +35,30 @@ func _unhandled_input(event: InputEvent) -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func _physics_process(delta: float) -> void:
-	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	var input: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var local_direction := Vector3(input.x, 0.0, input.y)
 	var direction := (transform.basis * local_direction).normalized()
-	var current_speed := sprint_speed if Input.is_key_pressed(KEY_SHIFT) else speed
+	var current_speed: float = sprint_speed if Input.is_key_pressed(KEY_SHIFT) else speed
 	velocity.x = direction.x * current_speed
 	velocity.z = direction.z * current_speed
+
 	if not is_on_floor():
 		velocity.y -= gravity * delta
 	else:
 		velocity.y = 0.0
+
 	move_and_slide()
 	update_gameplay(delta)
 
 func update_gameplay(delta: float) -> void:
 	var gas_center := Vector3(-36.0, 0.0, -36.0)
-	var distance_to_gas := Vector2(global_position.x - gas_center.x, global_position.z - gas_center.z).length()
-	var gas_level := clamp(100.0 - distance_to_gas * 3.2, 0.0, 100.0)
+	var distance_to_gas: float = Vector2(global_position.x - gas_center.x, global_position.z - gas_center.z).length()
+	var gas_level: float = clampf(100.0 - distance_to_gas * 3.2, 0.0, 100.0)
 
 	if gas_level > 35.0:
-		exposure = min(100.0, exposure + delta * gas_level * 0.055)
+		exposure = minf(100.0, exposure + delta * gas_level * 0.055)
 	else:
-		exposure = max(0.0, exposure - delta * 2.0)
+		exposure = maxf(0.0, exposure - delta * 2.0)
 
 	for node in get_tree().get_nodes_in_group("sample"):
 		if is_instance_valid(node) and global_position.distance_to(node.global_position) < 2.2:
